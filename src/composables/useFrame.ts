@@ -1,14 +1,14 @@
+import type { FrameCallback } from '../core/loop'
 import { inject, onBeforeUnmount } from 'vue'
 import { VHREE_CTX } from '../core/context'
-import type { FrameCallback } from '../core/loop'
 
-const noop = () => {}
+function noop() {}
 
 /**
  * Subscribe a callback to the shared render loop managed by <Vhree>.
  * Returns a disposer that can be called to unsubscribe early.
  */
-export const useFrame = (cb: FrameCallback): (() => void) => {
+export function useFrame(cb: FrameCallback): (() => void) {
   const ctx = inject(VHREE_CTX, null)
 
   if (!ctx) {

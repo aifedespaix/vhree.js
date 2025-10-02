@@ -28,7 +28,7 @@ export type AnimationFactory<Opts = unknown> = (opts?: Opts) => Animation
 /**
  * Declarative animation spec accepted by components.
  */
-export type AnimationSpec =
-  | string
-  | { name: string; options?: unknown }
-  | Animation
+export type AnimationSpec
+  = | string
+    | { name: string, options?: unknown }
+    | Animation

@@ -20,8 +20,8 @@ Scripts use Bun, but any Node 18+ runtime can run the tooling. The published pac
 
 ```vue
 <script setup lang="ts">
-import { Vhree, VCamera, VMesh } from 'vhree.js'
 import * as THREE from 'three'
+import { VCamera, Vhree, VMesh } from 'vhree.js'
 
 const background = '#0f172a'
 const geometry = new THREE.SphereGeometry(0.55, 32, 16)
@@ -42,36 +42,36 @@ const material = new THREE.MeshStandardMaterial({ color: '#f97316', roughness: 0
 
 ### `Vhree` props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `background` | `string` | `'#0f172a'` | Solid colour applied to `scene.background`. |
-| `dpr` | `number` | `0` (auto cap) | Device pixel ratio cap. `0` applies `min(devicePixelRatio, 2)`. |
+| Prop         | Type     | Default        | Description                                                     |
+| ------------ | -------- | -------------- | --------------------------------------------------------------- |
+| `background` | `string` | `'#0f172a'`    | Solid colour applied to `scene.background`.                     |
+| `dpr`        | `number` | `0` (auto cap) | Device pixel ratio cap. `0` applies `min(devicePixelRatio, 2)`. |
 
 ### `VCamera` props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `active` | `boolean` | `true` | Whether the camera should register as the active scene camera. |
-| `fov` | `number` | `60` | Field of view in degrees. Updates trigger `updateProjectionMatrix()`. |
-| `near` | `number` | `0.1` | Near clipping plane. Must stay `> 0`. |
-| `far` | `number` | `100` | Far clipping plane. Must stay `> near`. |
-| `position` | `[number, number, number]` | `[0, 0, 5]` | Camera world position. |
-| `up` | `[number, number, number]` | `[0, 1, 0]` | Up vector to stabilise roll. |
-| `lookAt` | `[number, number, number] \| null` | `null` | Optional target for `camera.lookAt`. |
-| `matrixAutoUpdate` | `boolean` | `true` | Mirrors `camera.matrixAutoUpdate`. |
+| Prop               | Type                               | Default     | Description                                                           |
+| ------------------ | ---------------------------------- | ----------- | --------------------------------------------------------------------- |
+| `active`           | `boolean`                          | `true`      | Whether the camera should register as the active scene camera.        |
+| `fov`              | `number`                           | `60`        | Field of view in degrees. Updates trigger `updateProjectionMatrix()`. |
+| `near`             | `number`                           | `0.1`       | Near clipping plane. Must stay `> 0`.                                 |
+| `far`              | `number`                           | `100`       | Far clipping plane. Must stay `> near`.                               |
+| `position`         | `[number, number, number]`         | `[0, 0, 5]` | Camera world position.                                                |
+| `up`               | `[number, number, number]`         | `[0, 1, 0]` | Up vector to stabilise roll.                                          |
+| `lookAt`           | `[number, number, number] \| null` | `null`      | Optional target for `camera.lookAt`.                                  |
+| `matrixAutoUpdate` | `boolean`                          | `true`      | Mirrors `camera.matrixAutoUpdate`.                                    |
 
 `VCamera` emits `ready(camera)` once mounted and exposes the raw Three camera through `defineExpose({ camera })` for imperative tweaks.
 
 ### `VMesh` props
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `geometry` | `THREE.BufferGeometry \| null` | `null` (creates `BoxGeometry`) | Geometry applied to the mesh. Custom geometries are not disposed automatically. |
-| `material` | `THREE.Material \| THREE.Material[] \| null` | `null` (creates `MeshBasicMaterial`) | Default material is visible without lights. Custom materials are not disposed automatically. |
-| `position` | `[number, number, number]` | `[0, 0, 0]` | Mesh world position. |
-| `rotation` | `[number, number, number]` | `[0, 0, 0]` | Euler rotation in radians (XYZ order). |
-| `scale` | `[number, number, number]` | `[1, 1, 1]` | Non-uniform scale per axis. |
-| `animations` | `AnimationSpec \| AnimationSpec[] \| null` | `null` | One or more animations applied each frame. |
+| Prop         | Type                                         | Default                              | Description                                                                                  |
+| ------------ | -------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `geometry`   | `THREE.BufferGeometry \| null`               | `null` (creates `BoxGeometry`)       | Geometry applied to the mesh. Custom geometries are not disposed automatically.              |
+| `material`   | `THREE.Material \| THREE.Material[] \| null` | `null` (creates `MeshBasicMaterial`) | Default material is visible without lights. Custom materials are not disposed automatically. |
+| `position`   | `[number, number, number]`                   | `[0, 0, 0]`                          | Mesh world position.                                                                         |
+| `rotation`   | `[number, number, number]`                   | `[0, 0, 0]`                          | Euler rotation in radians (XYZ order).                                                       |
+| `scale`      | `[number, number, number]`                   | `[1, 1, 1]`                          | Non-uniform scale per axis.                                                                  |
+| `animations` | `AnimationSpec \| AnimationSpec[] \| null`   | `null`                               | One or more animations applied each frame.                                                   |
 
 ### Behaviour highlights
 
@@ -95,7 +95,7 @@ import { pulse } from 'vhree.js'
     :animations="[
       'spin',
       { name: 'bounce', options: { amplitude: 0.2 } },
-      pulse({ frequency: 2 })
+      pulse({ frequency: 2 }),
     ]"
   />
 </template>
@@ -103,12 +103,12 @@ import { pulse } from 'vhree.js'
 
 The library registers four built-in factories:
 
-| Name | Options | Effect |
-| --- | --- | --- |
-| `spin` | `{ axis?: 'x' \| 'y' \| 'z'; speed?: number }` | Adds `speed * dt` to the chosen rotation axis. |
-| `rotate` | `{ x?: number; y?: number; z?: number }` | Adds per-axis angular velocity in radians per second. |
+| Name     | Options                                                                                 | Effect                                                                  |
+| -------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `spin`   | `{ axis?: 'x' \| 'y' \| 'z'; speed?: number }`                                          | Adds `speed * dt` to the chosen rotation axis.                          |
+| `rotate` | `{ x?: number; y?: number; z?: number }`                                                | Adds per-axis angular velocity in radians per second.                   |
 | `bounce` | `{ axis?: 'x' \| 'y' \| 'z'; amplitude?: number; frequency?: number; center?: number }` | Oscillates the selected position axis with `sin(now * 2π * frequency)`. |
-| `pulse` | `{ amplitude?: number; frequency?: number; base?: number }` | Applies uniform scale: `base + sin(now * 2π * frequency) * amplitude`. |
+| `pulse`  | `{ amplitude?: number; frequency?: number; base?: number }`                             | Applies uniform scale: `base + sin(now * 2π * frequency) * amplitude`.  |
 
 Custom animations can be registered globally and then referenced by name:
 
@@ -116,7 +116,8 @@ Custom animations can be registered globally and then referenced by name:
 import { registerAnimation } from 'vhree.js'
 
 registerAnimation('wiggle', () => (object, state, dt, now) => {
-  if (state.paused) return
+  if (state.paused)
+    return
   object.rotation.z = Math.sin(now * Math.PI * 4) * 0.25
 })
 ```

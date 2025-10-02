@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import { inject, onMounted, onBeforeUnmount, shallowRef, watch, toRef } from 'vue'
-import { useResizeObserver, useMutationObserver } from '@vueuse/core'
-import * as THREE from 'three'
 import type { PropType } from 'vue'
+import { useMutationObserver, useResizeObserver } from '@vueuse/core'
+import * as THREE from 'three'
+import { inject, onBeforeUnmount, onMounted, shallowRef, toRef, watch } from 'vue'
 import { VHREE_CTX } from '../core/context'
 
 defineOptions({ name: 'VCamera' })
 
-type Vec3 = [number, number, number]
-
 const props = defineProps({
   active: { type: Boolean, default: true },
-  fov: { type: Number, default: 60 },       // (0, 180)
-  near: { type: Number, default: 0.1 },     // > 0
-  far: { type: Number, default: 100 },      // > near
+  fov: { type: Number, default: 60 }, // (0, 180)
+  near: { type: Number, default: 0.1 }, // > 0
+  far: { type: Number, default: 100 }, // > near
   position: { type: Array as PropType<Vec3>, default: () => [0, 0, 5] },
   up: { type: Array as PropType<Vec3>, default: () => [0, 1, 0] },
   lookAt: { type: Array as PropType<Vec3 | null>, default: () => null },
@@ -21,6 +19,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits<{ (e: 'ready', camera: THREE.PerspectiveCamera): void }>()
+
+type Vec3 = [number, number, number]
 
 const ctx = inject(VHREE_CTX, null)
 if (!ctx && import.meta.env.DEV) {
@@ -45,8 +45,11 @@ const autoMatRef = toRef(props, 'matrixAutoUpdate')
 const tmpVec3 = new THREE.Vector3()
 
 function devValidate() {
-  if (!import.meta.env.DEV) return
-  const fov = fovRef.value, near = nearRef.value, far = farRef.value
+  if (!import.meta.env.DEV)
+    return
+  const fov = fovRef.value
+  const near = nearRef.value
+  const far = farRef.value
   if (!Number.isFinite(fov) || fov <= 0 || fov >= 180)
     console.warn('[vhree][VCamera] fov should be (0,180), got:', fov)
   if (!(near > 0))
@@ -57,7 +60,8 @@ function devValidate() {
 
 function computeAspect(): number {
   const el = ctx?.sizeEl?.value
-  if (!el) return 1
+  if (!el)
+    return 1
   const r = el.getBoundingClientRect()
   const w = Math.max(1, Math.floor(r.width || el.clientWidth || 1))
   const h = Math.max(1, Math.floor(r.height || el.clientHeight || 1))
@@ -66,27 +70,32 @@ function computeAspect(): number {
 
 function syncAspect() {
   const cam = cameraRef.value
-  if (!cam) return
+  if (!cam)
+    return
   cam.aspect = computeAspect()
   cam.updateProjectionMatrix()
 }
 
 function activateCamera() {
-  if (!ctx || !cameraRef.value) return
+  if (!ctx || !cameraRef.value)
+    return
   // ✅ fallback: activer même sans ownerToken
   if (ownerToken) {
     ctx.setCamera?.(cameraRef.value, { owner: ownerToken, disposePrev: true })
-  } else {
+  }
+  else {
     ctx.setCamera?.(cameraRef.value, { disposePrev: true } as any)
   }
   isActive.value = true
 }
 
 function releaseCamera() {
-  if (!ctx || !cameraRef.value || !isActive.value) return
+  if (!ctx || !cameraRef.value || !isActive.value)
+    return
   if (ownerToken && ctx.releaseCamera) {
     ctx.releaseCamera({ owner: ownerToken, camera: cameraRef.value })
-  } else {
+  }
+  else {
     // fallback: si notre caméra est active, la libère via setCamera(null) si le provider l’autorise
     if (ctx.camera?.value === cameraRef.value && (ctx as any).clearCamera) {
       (ctx as any).clearCamera()
@@ -100,13 +109,15 @@ function releaseCamera() {
 
 function applyMatrixAutoUpdate() {
   const cam = cameraRef.value
-  if (!cam) return
+  if (!cam)
+    return
   cam.matrixAutoUpdate = !!autoMatRef.value
 }
 
 function applyProjection() {
   const cam = cameraRef.value
-  if (!cam) return
+  if (!cam)
+    return
   cam.fov = fovRef.value
   cam.near = nearRef.value
   cam.far = farRef.value
@@ -114,22 +125,28 @@ function applyProjection() {
 }
 
 function applyPosition() {
-  const cam = cameraRef.value, v = posRef.value
-  if (!cam || !v) return
+  const cam = cameraRef.value
+  const v = posRef.value
+  if (!cam || !v)
+    return
   cam.position.set(v[0], v[1], v[2])
   cam.updateMatrixWorld()
 }
 
 function applyUp() {
-  const cam = cameraRef.value, v = upRef.value
-  if (!cam || !v) return
+  const cam = cameraRef.value
+  const v = upRef.value
+  if (!cam || !v)
+    return
   cam.up.set(v[0], v[1], v[2])
   cam.updateMatrixWorld()
 }
 
 function applyLookAt() {
-  const cam = cameraRef.value, v = lookAtRef.value
-  if (!cam || !v) return
+  const cam = cameraRef.value
+  const v = lookAtRef.value
+  if (!cam || !v)
+    return
   tmpVec3.set(v[0], v[1], v[2])
   cam.lookAt(tmpVec3)
   cam.updateMatrixWorld()
@@ -138,16 +155,21 @@ function applyLookAt() {
 // observe sizeEl even if it comes later
 function setupResizeSync() {
   watch(() => ctx?.sizeEl?.value, (el, _, onCleanup) => {
-    if (!el) return
+    if (!el)
+      return
     syncAspect() // initial sync now that el exists
     const ro = useResizeObserver(el, syncAspect)
     const mo = useMutationObserver(el, syncAspect, { attributes: true, attributeFilter: ['style', 'class'] })
-    onCleanup(() => { ro.stop(); mo.stop() })
+    onCleanup(() => {
+      ro.stop()
+      mo.stop()
+    })
   }, { immediate: true })
 }
 
 onMounted(() => {
-  if (!ctx || typeof window === 'undefined') return
+  if (!ctx || typeof window === 'undefined')
+    return
 
   devValidate()
 
@@ -155,27 +177,33 @@ onMounted(() => {
     fovRef.value,
     /* aspect */ computeAspect(), // direct aspect on mount if possible
     nearRef.value,
-    farRef.value
+    farRef.value,
   )
   cameraRef.value = cam
 
   applyMatrixAutoUpdate()
-  applyProjection()  // keep, ensures planes set + projection
+  applyProjection() // keep, ensures planes set + projection
   applyPosition()
   applyUp()
   applyLookAt()
 
-  setupResizeSync()  // ensures future aspect syncs
+  setupResizeSync() // ensures future aspect syncs
 
-  if (activeRef.value) activateCamera()
+  if (activeRef.value)
+    activateCamera()
   emit('ready', cam)
 })
 
 // Activation / désactivation
-watch(activeRef, (val) => { val ? activateCamera() : releaseCamera() })
+watch(activeRef, (val) => {
+  val ? activateCamera() : releaseCamera()
+})
 
 // Projection groupée (1 seul updateProjectionMatrix)
-watch([fovRef, nearRef, farRef], () => { devValidate(); applyProjection() })
+watch([fovRef, nearRef, farRef], () => {
+  devValidate()
+  applyProjection()
+})
 
 // Transforms
 watch(posRef, applyPosition, { immediate: true })
@@ -189,7 +217,6 @@ onBeforeUnmount(() => {
   releaseCamera()
   cameraRef.value = null
 })
-
 
 // expose
 defineExpose({ camera: cameraRef })

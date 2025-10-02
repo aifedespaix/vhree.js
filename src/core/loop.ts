@@ -7,7 +7,7 @@ export interface RenderLoop {
   reset: () => void
 }
 
-export const createRenderLoop = (): RenderLoop => {
+export function createRenderLoop(): RenderLoop {
   const callbacks = new Set<FrameCallback>()
   let lastNow = 0
 

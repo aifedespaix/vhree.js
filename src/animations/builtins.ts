@@ -15,7 +15,8 @@ export const spin: AnimationFactory<SpinOptions> = (options?: SpinOptions): Anim
   const speed = typeof options?.speed === 'number' ? options.speed : 1
 
   return (obj, state, dt) => {
-    if (state.paused || dt === 0) return
+    if (state.paused || dt === 0)
+      return
     obj.rotation[axis] += speed * dt
   }
 }
@@ -32,10 +33,14 @@ export const rotate: AnimationFactory<RotateOptions> = (options?: RotateOptions)
   const z = options?.z ?? 0
 
   return (obj, state, dt) => {
-    if (state.paused || dt === 0) return
-    if (x) obj.rotation.x += x * dt
-    if (y) obj.rotation.y += y * dt
-    if (z) obj.rotation.z += z * dt
+    if (state.paused || dt === 0)
+      return
+    if (x)
+      obj.rotation.x += x * dt
+    if (y)
+      obj.rotation.y += y * dt
+    if (z)
+      obj.rotation.z += z * dt
   }
 }
 
@@ -54,7 +59,8 @@ export const bounce: AnimationFactory<BounceOptions> = (options?: BounceOptions)
   const angular = frequency * TAU
 
   return (obj, state, _dt, now) => {
-    if (state.paused) return
+    if (state.paused)
+      return
     obj.position[axis] = center + Math.sin(now * angular) * amplitude
   }
 }
@@ -72,7 +78,8 @@ export const pulse: AnimationFactory<PulseOptions> = (options?: PulseOptions): A
   const angular = frequency * TAU
 
   return (obj, state, _dt, now) => {
-    if (state.paused) return
+    if (state.paused)
+      return
     const scalar = base + Math.sin(now * angular) * amplitude
     obj.scale.setScalar(scalar)
   }

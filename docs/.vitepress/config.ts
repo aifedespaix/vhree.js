@@ -9,7 +9,7 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Vhree', link: '/components/vhree' },
       { text: 'VCamera', link: '/components/vcamera' },
-      { text: 'VMesh', link: '/components/vmesh' }
+      { text: 'VMesh', link: '/components/vmesh' },
     ],
 
     sidebar: [
@@ -18,13 +18,13 @@ export default defineConfig({
         items: [
           { text: 'Vhree', link: '/components/vhree' },
           { text: 'VCamera', link: '/components/vcamera' },
-          { text: 'VMesh', link: '/components/vmesh' }
-        ]
-      }
+          { text: 'VMesh', link: '/components/vmesh' },
+        ],
+      },
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/aifedev/vhree.js' }
-    ]
-  }
+      { icon: 'github', link: 'https://github.com/aifedev/vhree.js' },
+    ],
+  },
 })

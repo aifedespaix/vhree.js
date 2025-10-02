@@ -6,7 +6,7 @@
 
 ```vue
 <script setup lang="ts">
-import { Vhree, VCamera } from 'vhree.js'
+import { VCamera, Vhree } from 'vhree.js'
 
 const fov = 55
 const position: [number, number, number] = [1.2, 0.8, 3.4]
@@ -28,16 +28,16 @@ The component emits `ready(camera)` once it mounts and calls `ctx.setCamera`. Yo
 
 ## Props
 
-| Prop | Type | Default | Notes |
-| --- | --- | --- | --- |
-| `active` | `boolean` | `true` | Registers the camera with the provider. Toggle to `false` to release ownership. |
-| `fov` | `number` | `60` | Field of view in degrees. Triggers `updateProjectionMatrix()` when altered. |
-| `near` | `number` | `0.1` | Near clipping plane (`> 0`). DEV mode warns if invalid. |
-| `far` | `number` | `100` | Far clipping plane (`> near`). DEV mode warns if invalid. |
-| `position` | `[number, number, number]` | `[0, 0, 5]` | Camera world position. |
-| `up` | `[number, number, number]` | `[0, 1, 0]` | Up vector used to compute roll. |
-| `lookAt` | `[number, number, number] \| null` | `null` | Optional look-at target. Leave `null` to manage orientation manually. |
-| `matrixAutoUpdate` | `boolean` | `true` | Mirrors Three's `matrixAutoUpdate` flag. |
+| Prop               | Type                               | Default     | Notes                                                                           |
+| ------------------ | ---------------------------------- | ----------- | ------------------------------------------------------------------------------- |
+| `active`           | `boolean`                          | `true`      | Registers the camera with the provider. Toggle to `false` to release ownership. |
+| `fov`              | `number`                           | `60`        | Field of view in degrees. Triggers `updateProjectionMatrix()` when altered.     |
+| `near`             | `number`                           | `0.1`       | Near clipping plane (`> 0`). DEV mode warns if invalid.                         |
+| `far`              | `number`                           | `100`       | Far clipping plane (`> near`). DEV mode warns if invalid.                       |
+| `position`         | `[number, number, number]`         | `[0, 0, 5]` | Camera world position.                                                          |
+| `up`               | `[number, number, number]`         | `[0, 1, 0]` | Up vector used to compute roll.                                                 |
+| `lookAt`           | `[number, number, number] \| null` | `null`      | Optional look-at target. Leave `null` to manage orientation manually.           |
+| `matrixAutoUpdate` | `boolean`                          | `true`      | Mirrors Three's `matrixAutoUpdate` flag.                                        |
 
 ## Behaviour
 
@@ -50,4 +50,3 @@ The component emits `ready(camera)` once it mounts and calls `ctx.setCamera`. Yo
 ## Histoire Story
 
 Variants covering multiple camera positions and activation toggles live under `/stories/VCamera.story.vue`. Launch `bun run story:dev` to try them interactively.
-

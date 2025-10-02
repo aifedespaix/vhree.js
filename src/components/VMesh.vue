@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { inject, onBeforeUnmount, shallowRef, watch, watchEffect } from 'vue'
+import type { AnimationSpec, AnimState } from '../animations/types'
 import * as THREE from 'three'
-import { VHREE_CTX } from '../core/context'
-import { useFrame } from '../composables/useFrame'
+import { inject, onBeforeUnmount, shallowRef, watchEffect } from 'vue'
 import { useAnimation } from '../animations/useAnimation'
-import type { AnimState, AnimationSpec } from '../animations/types'
+import { useFrame } from '../composables/useFrame'
+import { VHREE_CTX } from '../core/context'
 
 type Vec3 = [number, number, number]
 
@@ -24,7 +24,6 @@ const props = withDefaults(defineProps<{
   animations: null,
 })
 
-
 const ctx = inject(VHREE_CTX, null)
 
 if (!ctx && import.meta.env.DEV) {
@@ -41,7 +40,8 @@ const getMaterial = () => props.material ?? new THREE.MeshBasicMaterial({ color:
 
 watchEffect((onCleanup) => {
   const scene = ctx?.scene.value
-  if (!scene) return
+  if (!scene)
+    return
 
   // si mesh pas créé → on fait un cube par défaut
   if (!meshRef.value) {
@@ -72,12 +72,14 @@ onBeforeUnmount(() => {
 
 useFrame((dt, now) => {
   const mesh = meshRef.value
-  if (!mesh) return
+  if (!mesh)
+    return
 
   animState.t += dt
 
   const active = animations.value
-  if (!active.length) return
+  if (!active.length)
+    return
 
   for (let i = 0; i < active.length; i += 1) {
     active[i](mesh, animState, dt, now)

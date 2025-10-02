@@ -1,20 +1,19 @@
-import { computed, unref } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter } from 'vue'
-import { resolveAnimation } from './registry'
 import type { Animation, AnimationSpec } from './types'
+import { computed, unref } from 'vue'
+import { resolveAnimation } from './registry'
 import './builtins'
 
-const toArray = (spec: AnimationSpec | AnimationSpec[] | null | undefined): AnimationSpec[] => {
-  if (!spec) return []
+function toArray(spec: AnimationSpec | AnimationSpec[] | null | undefined): AnimationSpec[] {
+  if (!spec)
+    return []
   return Array.isArray(spec) ? spec : [spec]
 }
 
 /**
  * Resolve animation specifications into executable callbacks using the registry.
  */
-export const useAnimation = (
-  specs: MaybeRefOrGetter<AnimationSpec | AnimationSpec[] | null | undefined>
-): ComputedRef<Animation[]> => {
+export function useAnimation(specs: MaybeRefOrGetter<AnimationSpec | AnimationSpec[] | null | undefined>): ComputedRef<Animation[]> {
   return computed<Animation[]>(() => {
     const value = typeof specs === 'function' ? (specs as () => AnimationSpec | AnimationSpec[] | null | undefined)() : unref(specs)
     const entries = toArray(value)

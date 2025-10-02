@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { reactive, computed } from 'vue'
-import { Vhree, VCamera, VMesh } from '../src'
+import { computed, reactive } from 'vue'
+import { VCamera, Vhree, VMesh } from '../src'
 
 type Vec3 = [number, number, number]
 
 const state = reactive({
   // Camera toggles & frustum
   active: true,
-  fov: 60,      // 10–120 conseillé
+  fov: 60, // 10–120 conseillé
   near: 0.1,
   far: 100,
 
@@ -28,7 +28,7 @@ const lookAt = computed<Vec3>(() => [state.lookAtX, state.lookAtY, state.lookAtZ
 </script>
 
 <template>
-  <Story title="VCamera" autoPropsDisabled>
+  <Story title="VCamera" auto-props-disabled>
     <!-- Panneau de contrôles typé -->
     <template #controls>
       <div class="control-grid">
@@ -52,8 +52,10 @@ const lookAt = computed<Vec3>(() => [state.lookAtX, state.lookAtY, state.lookAtZ
     <Variant title="Perspective — interactive">
       <div class="story-canvas">
         <Vhree background="#0b1120">
-          <VCamera :active="state.active" :fov="state.fov" :near="state.near" :far="state.far" :position="position"
-            :look-at="lookAt" />
+          <VCamera
+            :active="state.active" :fov="state.fov" :near="state.near" :far="state.far" :position="position"
+            :look-at="lookAt"
+          />
           <VMesh />
         </Vhree>
       </div>

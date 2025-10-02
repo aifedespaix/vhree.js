@@ -1,32 +1,32 @@
 # AGENTS.md — Vhree.js (Vue 3 + Three.js)
 
-> A minimal, explicit, SSR-friendly Vue 3 layer over Three.js. TS-first, zero-magic, opt-in features.  
+> A minimal, explicit, SSR-friendly Vue 3 layer over Three.js. TS-first, zero-magic, opt-in features.
 > Component prefix (target): **`VX`** (e.g., `VXCanvas`, `VXMesh`). Current code ships prototype components named `Vhree` (canvas), `VCamera`, and `VMesh` until the VX suite is ready.
 
 ## 0) Core Principles
 
-1. **Keep Three explicit**  
+1. **Keep Three explicit**
    Expose real Three primitives (Scene, Camera, Mesh, Materials). Minimal “sugar”; easy escape hatch to raw Three.
 
-2. **Vue idioms, not gymnastics**  
+2. **Vue idioms, not gymnastics**
    Composition API, `provide/inject` for context, **composables** for logic, **components** for structure. Do not over-reactify Three objects.
 
-3. **SSR-friendly by design**  
+3. **SSR-friendly by design**
    No DOM/WebGL at module scope; side effects only in `onMounted`. Guard browser-only code.
 
-4. **Type safety is API safety**  
+4. **Type safety is API safety**
    Narrow TS types for props/slots/emits. Ship `.d.ts` for everything. JSDoc on public items.
 
-5. **Dispose everything**  
+5. **Dispose everything**
    GPU/DOM resources must be disposed on unmount or when replaced.
 
-6. **Performance is opt-in**  
+6. **Performance is opt-in**
    Defaults favor clarity; provide knobs (DPR cap, invalidate-on-demand, instancing helpers).
 
-7. **Minimal surface**  
+7. **Minimal surface**
    Ship a small set of primitives well; advanced features are opt-in.
 
-8. **Use VueUse when helpful**  
+8. **Use VueUse when helpful**
    Prefer **VueUse** utilities for timers, RAF, resize, events, debouncing/throttling, window.xxxx, etc. (e.g. `useRafFn`, `useResizeObserver`, `useEventListener`, `useIntervalFn`, `useTimeoutFn`, `useElementSize`).
 
 ---
@@ -55,7 +55,7 @@ AGENTS.md
 
 ### 2.1 Components (prefix `VX`)
 
-- **`<VXCanvas>`** – provider  
+- **`<VXCanvas>`** – provider
   Creates renderer, scene, (optional) default camera, a RAF loop, and resize handling.
   - Props:
     - `background?: ColorRepresentation`
@@ -65,17 +65,17 @@ AGENTS.md
   - Uses **VueUse**: `useResizeObserver` for responsive sizing, `useRafFn` if appropriate.
   - Effects only in `onMounted`; full cleanup in `onUnmounted`.
 
-- **`<VXPerspectiveCamera>`**  
+- **`<VXPerspectiveCamera>`**
   Installs a `PerspectiveCamera` into context; replaces default if present.
   - Props: `{ fov?: number; near?: number; far?: number; position?: [x,y,z]; lookAt?: [x,y,z] }`
   - On container resize, update `aspect` + `updateProjectionMatrix()`.
 
-- **`<VXMesh>`**  
+- **`<VXMesh>`**
   Declarative `THREE.Mesh` mount/unmount.
   - Props: `{ geometry: BufferGeometry; material: Material|Material[]; position?: [x,y,z]; rotation?: [x,y,z]; scale?: [x,y,z] }`
   - Watch transforms with minimal churn; dispose geometry/material(s) on unmount or replacement.
 
-- **`<VXOrbitControls>`**  
+- **`<VXOrbitControls>`**
   Attaches OrbitControls to current camera/renderer.
   - Props (minimal): `enableDamping?: boolean`, `dampingFactor?: number`, etc.
   - If damping is enabled, ensure `controls.update()` is tied to the loop.

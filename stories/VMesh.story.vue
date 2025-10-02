@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import * as THREE from 'three'
-import { Vhree, VCamera, VMesh, pulse } from '../src'
 import type { AnimationSpec } from '../src'
+import * as THREE from 'three'
+import { computed, ref, watch } from 'vue'
+import { pulse, VCamera, Vhree, VMesh } from '../src'
 
 const useCustomResources = ref(true)
 const meshColor = ref('#38bdf8')
@@ -38,8 +38,8 @@ const animations = computed(() => {
       options: {
         axis: bounceAxis.value,
         amplitude: bounceAmplitude.value,
-        frequency: bounceFrequency.value
-      }
+        frequency: bounceFrequency.value,
+      },
     })
   }
 
@@ -87,46 +87,46 @@ watch(wireframe, (value) => {
         <header class="control-panel">
           <label>
             Use custom geometry & material
-            <input v-model="useCustomResources" type="checkbox" />
+            <input v-model="useCustomResources" type="checkbox">
           </label>
           <label>
             Mesh colour
-            <input v-model="meshColor" type="color" />
+            <input v-model="meshColor" type="color">
           </label>
           <label>
             Wireframe
-            <input v-model="wireframe" type="checkbox" />
+            <input v-model="wireframe" type="checkbox">
           </label>
         </header>
 
         <section class="control-grid">
           <label>
             Position X
-            <input v-model.number="posX" type="range" min="-1.5" max="1.5" step="0.05" />
+            <input v-model.number="posX" type="range" min="-1.5" max="1.5" step="0.05">
           </label>
           <label>
             Position Y
-            <input v-model.number="posY" type="range" min="-1.5" max="1.5" step="0.05" />
+            <input v-model.number="posY" type="range" min="-1.5" max="1.5" step="0.05">
           </label>
           <label>
             Position Z
-            <input v-model.number="posZ" type="range" min="-1.5" max="1.5" step="0.05" />
+            <input v-model.number="posZ" type="range" min="-1.5" max="1.5" step="0.05">
           </label>
           <label>
             Rotation X
-            <input v-model.number="rotX" type="range" min="-3.141" max="3.141" step="0.05" />
+            <input v-model.number="rotX" type="range" min="-3.141" max="3.141" step="0.05">
           </label>
           <label>
             Rotation Y
-            <input v-model.number="rotY" type="range" min="-3.141" max="3.141" step="0.05" />
+            <input v-model.number="rotY" type="range" min="-3.141" max="3.141" step="0.05">
           </label>
           <label>
             Rotation Z
-            <input v-model.number="rotZ" type="range" min="-3.141" max="3.141" step="0.05" />
+            <input v-model.number="rotZ" type="range" min="-3.141" max="3.141" step="0.05">
           </label>
           <label>
             Uniform scale
-            <input v-model.number="uniformScale" type="range" min="0.2" max="2" step="0.05" />
+            <input v-model.number="uniformScale" type="range" min="0.2" max="2" step="0.05">
           </label>
         </section>
 
@@ -154,15 +154,15 @@ watch(wireframe, (value) => {
         <header class="control-panel">
           <label>
             Spin
-            <input v-model="enableSpin" type="checkbox" />
+            <input v-model="enableSpin" type="checkbox">
           </label>
           <label>
             Bounce
-            <input v-model="enableBounce" type="checkbox" />
+            <input v-model="enableBounce" type="checkbox">
           </label>
           <label>
             Pulse
-            <input v-model="enablePulse" type="checkbox" />
+            <input v-model="enablePulse" type="checkbox">
           </label>
         </header>
 
@@ -176,7 +176,7 @@ watch(wireframe, (value) => {
               max="6"
               step="0.1"
               :disabled="!enableSpin"
-            />
+            >
           </label>
           <label>
             Bounce axis
@@ -195,7 +195,7 @@ watch(wireframe, (value) => {
               max="1"
               step="0.05"
               :disabled="!enableBounce"
-            />
+            >
           </label>
           <label>
             Bounce frequency
@@ -206,7 +206,7 @@ watch(wireframe, (value) => {
               max="3"
               step="0.05"
               :disabled="!enableBounce"
-            />
+            >
           </label>
           <label>
             Pulse frequency
@@ -217,7 +217,7 @@ watch(wireframe, (value) => {
               max="4"
               step="0.1"
               :disabled="!enablePulse"
-            />
+            >
           </label>
           <label>
             Pulse amplitude
@@ -228,7 +228,7 @@ watch(wireframe, (value) => {
               max="0.5"
               step="0.01"
               :disabled="!enablePulse"
-            />
+            >
           </label>
         </section>
 

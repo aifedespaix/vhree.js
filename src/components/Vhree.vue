@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, provide, shallowRef, watch } from 'vue'
-import * as THREE from 'three'
-import { VHREE_CTX } from '../core/context'
 import type { CameraReleaseOptions, CameraSetOptions } from '../core/context'
+import * as THREE from 'three'
+import { onBeforeUnmount, onMounted, provide, shallowRef, watch } from 'vue'
+import { VHREE_CTX } from '../core/context'
 import { createRenderLoop } from '../core/loop'
 
 const props = defineProps({
   background: { type: String, default: '#0f172a' },
-  devicePixelRatio: { type: Number, default: 1 }
+  devicePixelRatio: { type: Number, default: 1 },
 })
 
 const rootRef = shallowRef<HTMLDivElement | null>(null)
@@ -31,14 +31,16 @@ const DEFAULT_CAMERA_OWNER = Symbol('vhree-default-camera')
 
 const registerCameraOwner = () => Symbol('vhree-camera-owner')
 
-const updateCameraAspect = (camera: THREE.PerspectiveCamera | null) => {
-  if (!camera) return
+function updateCameraAspect(camera: THREE.PerspectiveCamera | null) {
+  if (!camera)
+    return
   camera.aspect = lastSize.width / lastSize.height
   camera.updateProjectionMatrix()
 }
 
-const ensureDefaultCamera = () => {
-  if (!scene) return null
+function ensureDefaultCamera() {
+  if (!scene)
+    return null
   if (!defaultCamera) {
     defaultCamera = new THREE.PerspectiveCamera(60, lastSize.width / lastSize.height, 0.1, 100)
     defaultCamera.position.set(0, 0, 3)
@@ -47,15 +49,18 @@ const ensureDefaultCamera = () => {
   return defaultCamera
 }
 
-const requestRender = () => {
-  if (!renderer || !scene) return
+function requestRender() {
+  if (!renderer || !scene)
+    return
   const cam = cameraRef.value
-  if (!cam) return
+  if (!cam)
+    return
   renderer.render(scene, cam)
 }
 
-const setCamera = (camera: THREE.PerspectiveCamera, { owner, disposePrev = false }: CameraSetOptions) => {
-  if (!scene) return
+function setCamera(camera: THREE.PerspectiveCamera, { owner, disposePrev = false }: CameraSetOptions) {
+  if (!scene)
+    return
   if (import.meta.env.DEV && activeCameraOwner && activeCameraOwner !== owner) {
     console.warn('[vhree] multiple active cameras detected. Last mounted camera wins.')
   }
@@ -71,7 +76,7 @@ const setCamera = (camera: THREE.PerspectiveCamera, { owner, disposePrev = false
   requestRender()
 }
 
-const releaseCamera = ({ owner }: CameraReleaseOptions) => {
+function releaseCamera({ owner }: CameraReleaseOptions) {
   if (activeCameraOwner !== owner) {
     if (import.meta.env.DEV) {
       console.warn('[vhree] releaseCamera called by non-active owner. Ignoring.')
@@ -86,7 +91,8 @@ const releaseCamera = ({ owner }: CameraReleaseOptions) => {
     cameraRef.value = fallback
     activeCameraOwner = DEFAULT_CAMERA_OWNER
     updateCameraAspect(fallback)
-  } else {
+  }
+  else {
     cameraRef.value = null
   }
 
@@ -101,17 +107,19 @@ provide(VHREE_CTX, {
   loop,
   registerCameraOwner,
   setCamera,
-  releaseCamera
+  releaseCamera,
 })
 
-const applyBackground = (value: string) => {
-  if (!scene) return
+function applyBackground(value: string) {
+  if (!scene)
+    return
   scene.background = new THREE.Color(value)
 }
 
-const resize = () => {
+function resize() {
   const container = sizeElRef.value
-  if (!container || !renderer) return
+  if (!container || !renderer)
+    return
   const rect = container.getBoundingClientRect()
   const width = Math.max(rect.width || container.clientWidth, 1)
   const height = Math.max(rect.height || container.clientHeight, 1)
@@ -122,27 +130,30 @@ const resize = () => {
 
 watch(
   () => props.background,
-  (value) => applyBackground(value),
-  { immediate: true }
+  value => applyBackground(value),
+  { immediate: true },
 )
 
 watch(
   () => props.devicePixelRatio,
   (value) => {
-    if (!renderer || typeof window === 'undefined') return
+    if (!renderer || typeof window === 'undefined')
+      return
     const target = value > 0 ? value : Math.min(window.devicePixelRatio || 1, 2)
     renderer.setPixelRatio(target)
     requestRender()
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 onMounted(() => {
-  if (typeof window === 'undefined') return
+  if (typeof window === 'undefined')
+    return
 
   const canvas = canvasRef.value
   const root = rootRef.value
-  if (!canvas || !root) return
+  if (!canvas || !root)
+    return
 
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -157,8 +168,8 @@ onMounted(() => {
 
   applyBackground(props.background)
 
-  const ambient = new THREE.AmbientLight(0xffffff, 0.4)
-  const directional = new THREE.DirectionalLight(0xffffff, 0.8)
+  const ambient = new THREE.AmbientLight(0xFFFFFF, 0.4)
+  const directional = new THREE.DirectionalLight(0xFFFFFF, 0.8)
   directional.position.set(3, 2, 1)
   scene.add(ambient, directional)
 
@@ -180,14 +191,16 @@ onMounted(() => {
   if (typeof ResizeObserver !== 'undefined') {
     resizeObserver = new ResizeObserver(resize)
     resizeObserver.observe(root)
-  } else {
+  }
+  else {
     window.addEventListener('resize', resize)
   }
 
   const renderLoop = (time: number) => {
     loop.step(time)
 
-    if (!renderer || !scene) return
+    if (!renderer || !scene)
+      return
     const cam = cameraRef.value
     if (cam) {
       renderer.render(scene, cam)

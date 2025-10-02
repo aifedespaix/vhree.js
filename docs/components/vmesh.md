@@ -10,8 +10,8 @@
 
 ```vue
 <script setup lang="ts">
-import { Vhree, VCamera, VMesh } from 'vhree.js'
 import * as THREE from 'three'
+import { VCamera, Vhree, VMesh } from 'vhree.js'
 
 const geometry = new THREE.SphereGeometry(0.5, 32, 16)
 const material = new THREE.MeshStandardMaterial({ color: '#22d3ee', metalness: 0.1, roughness: 0.5 })
@@ -29,14 +29,14 @@ If you omit the geometry or material props, `VMesh` falls back to a unit cube pa
 
 ## Props
 
-| Prop | Type | Default | Notes |
-| --- | --- | --- | --- |
-| `geometry` | `THREE.BufferGeometry \| null` | `null` | When `null`, the component creates and owns a `BoxGeometry`. Custom geometries are not disposed automatically. |
-| `material` | `THREE.Material \| THREE.Material[] \| null` | `null` | When `null`, the component instantiates a `MeshBasicMaterial` so the mesh is lit-free. Custom materials are not disposed automatically. |
-| `position` | `[number, number, number]` | `[0, 0, 0]` | Applied as `mesh.position`. Pass a new tuple to trigger updates. |
-| `rotation` | `[number, number, number]` | `[0, 0, 0]` | Applied as Euler XYZ rotation in radians. |
-| `scale` | `[number, number, number]` | `[1, 1, 1]` | Applied as `mesh.scale`. |
-| `animations` | `AnimationSpec \| AnimationSpec[] \| null` | `null` | One or more animation specs resolved against the global registry. |
+| Prop         | Type                                         | Default     | Notes                                                                                                                                   |
+| ------------ | -------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `geometry`   | `THREE.BufferGeometry \| null`               | `null`      | When `null`, the component creates and owns a `BoxGeometry`. Custom geometries are not disposed automatically.                          |
+| `material`   | `THREE.Material \| THREE.Material[] \| null` | `null`      | When `null`, the component instantiates a `MeshBasicMaterial` so the mesh is lit-free. Custom materials are not disposed automatically. |
+| `position`   | `[number, number, number]`                   | `[0, 0, 0]` | Applied as `mesh.position`. Pass a new tuple to trigger updates.                                                                        |
+| `rotation`   | `[number, number, number]`                   | `[0, 0, 0]` | Applied as Euler XYZ rotation in radians.                                                                                               |
+| `scale`      | `[number, number, number]`                   | `[1, 1, 1]` | Applied as `mesh.scale`.                                                                                                                |
+| `animations` | `AnimationSpec \| AnimationSpec[] \| null`   | `null`      | One or more animation specs resolved against the global registry.                                                                       |
 
 ## Lifecycle
 
@@ -60,12 +60,12 @@ import { pulse } from 'vhree.js'
 
 Built-in factories register automatically:
 
-| Name | Options |
-| --- | --- |
-| `spin` | `{ axis?: 'x' \| 'y' \| 'z'; speed?: number }` |
-| `rotate` | `{ x?: number; y?: number; z?: number }` |
+| Name     | Options                                                                                 |
+| -------- | --------------------------------------------------------------------------------------- |
+| `spin`   | `{ axis?: 'x' \| 'y' \| 'z'; speed?: number }`                                          |
+| `rotate` | `{ x?: number; y?: number; z?: number }`                                                |
 | `bounce` | `{ axis?: 'x' \| 'y' \| 'z'; amplitude?: number; frequency?: number; center?: number }` |
-| `pulse` | `{ amplitude?: number; frequency?: number; base?: number }` |
+| `pulse`  | `{ amplitude?: number; frequency?: number; base?: number }`                             |
 
 Provide custom behaviour by registering factories:
 
@@ -75,7 +75,8 @@ import { registerAnimation } from 'vhree.js'
 registerAnimation('flash', (opts?: { rate?: number }) => {
   const rate = opts?.rate ?? 4
   return (mesh, state, _dt, now) => {
-    if (state.paused) return
+    if (state.paused)
+      return
     const intensity = (Math.sin(now * Math.PI * rate) + 1) * 0.5
     mesh.visible = intensity > 0.2
   }

@@ -10,8 +10,8 @@ The component defers every WebGL side effect to `onMounted` and cleans up GPU re
 
 ```vue
 <script setup lang="ts">
-import { Vhree, VCamera, VMesh } from 'vhree.js'
 import * as THREE from 'three'
+import { VCamera, Vhree, VMesh } from 'vhree.js'
 
 const background = '#0f172a'
 const geometry = new THREE.TorusKnotGeometry(0.45, 0.18, 128, 32)
@@ -32,10 +32,10 @@ const material = new THREE.MeshStandardMaterial({ color: '#facc15', metalness: 0
 
 ## Props
 
-| Prop | Type | Default | Notes |
-| --- | --- | --- | --- |
-| `background` | `string` | `'#0f172a'` | Applied to the scene background via `THREE.Color`. |
-| `dpr` | `number` | `0` | Caps renderer DPR. `0` falls back to `Math.min(devicePixelRatio, 2)`. |
+| Prop         | Type     | Default     | Notes                                                                 |
+| ------------ | -------- | ----------- | --------------------------------------------------------------------- |
+| `background` | `string` | `'#0f172a'` | Applied to the scene background via `THREE.Color`.                    |
+| `dpr`        | `number` | `0`         | Caps renderer DPR. `0` falls back to `Math.min(devicePixelRatio, 2)`. |
 
 ## Behaviour Overview
 

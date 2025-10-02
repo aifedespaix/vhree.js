@@ -1,16 +1,16 @@
-export { default as Vhree } from './components/Vhree.vue'
-export { default as VMesh } from './components/VMesh.vue'
-export { default as VCamera } from './components/VCamera.vue'
-
-export { useFrame } from './composables/useFrame'
-
-export { useAnimation } from './animations/useAnimation'
+export { bounce, pulse, rotate, spin } from './animations/builtins'
 export { registerAnimation } from './animations/registry'
-export { spin, rotate, bounce, pulse } from './animations/builtins'
-
 export type {
-  AnimState,
   Animation,
   AnimationFactory,
-  AnimationSpec
+  AnimationSpec,
+  AnimState,
 } from './animations/types'
+
+export { useAnimation } from './animations/useAnimation'
+
+export { default as VCamera } from './components/VCamera.vue'
+export { default as Vhree } from './components/Vhree.vue'
+export { default as VMesh } from './components/VMesh.vue'
+
+export { useFrame } from './composables/useFrame'
