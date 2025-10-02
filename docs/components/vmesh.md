@@ -31,8 +31,8 @@ If you omit the geometry or material props, `VMesh` falls back to a unit cube pa
 
 | Prop         | Type                                         | Default     | Notes                                                                                                                                   |
 | ------------ | -------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `geometry`   | `THREE.BufferGeometry \| null`               | `null`      | When `null`, the component creates and owns a `BoxGeometry`. Custom geometries are not disposed automatically.                          |
-| `material`   | `THREE.Material \| THREE.Material[] \| null` | `null`      | When `null`, the component instantiates a `MeshBasicMaterial` so the mesh is lit-free. Custom materials are not disposed automatically. |
+| `geometry`   | `THREE.BufferGeometry \| null`               | `null`      | When `null`, the component creates and owns a `BoxGeometry`. The fallback is disposed when unmounted or replaced; custom geometries stay under caller control. |
+| `material`   | `THREE.Material \| THREE.Material[] \| null` | `null`      | When `null`, the component instantiates a `MeshBasicMaterial` so the mesh is lit-free. The fallback is disposed when unmounted or replaced; custom materials are never disposed by the component. |
 | `position`   | `[number, number, number]`                   | `[0, 0, 0]` | Applied as `mesh.position`. Pass a new tuple to trigger updates.                                                                        |
 | `rotation`   | `[number, number, number]`                   | `[0, 0, 0]` | Applied as Euler XYZ rotation in radians.                                                                                               |
 | `scale`      | `[number, number, number]`                   | `[1, 1, 1]` | Applied as `mesh.scale`.                                                                                                                |
@@ -41,7 +41,7 @@ If you omit the geometry or material props, `VMesh` falls back to a unit cube pa
 ## Lifecycle
 
 - A mesh is lazily created when the provider exposes a scene.
-- The mesh is removed from the scene on unmount, and any default geometry/material instances owned by `VMesh` are disposed.
+- The mesh is removed from the scene on unmount. Fallback geometry/material instances owned by `VMesh` are disposed on unmount and whenever you swap to user-provided resources, while custom instances remain untouched. DEV builds surface disposal failures via console warnings.
 - Updating `geometry` or `material` props swaps the underlying Three.js references without re-creating the mesh.
 
 ## Animations

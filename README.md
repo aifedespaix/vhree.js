@@ -68,8 +68,8 @@ const material = new THREE.MeshStandardMaterial({ color: '#f97316', roughness: 0
 
 | Prop         | Type                                         | Default                              | Description                                                                                  |
 | ------------ | -------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `geometry`   | `THREE.BufferGeometry \| null`               | `null` (creates `BoxGeometry`)       | Geometry applied to the mesh. Custom geometries are not disposed automatically.              |
-| `material`   | `THREE.Material \| THREE.Material[] \| null` | `null` (creates `MeshBasicMaterial`) | Default material is visible without lights. Custom materials are not disposed automatically. |
+| `geometry`   | `THREE.BufferGeometry \| null`               | `null` (creates `BoxGeometry`)       | Geometry applied to the mesh. The fallback geometry is disposed when unmounted or replaced; custom geometries are left untouched. |
+| `material`   | `THREE.Material \| THREE.Material[] \| null` | `null` (creates `MeshBasicMaterial`) | Default material is visible without lights. The fallback material is disposed when unmounted or replaced; custom materials remain under caller control. |
 | `position`   | `[number, number, number]`                   | `[0, 0, 0]`                          | Mesh world position.                                                                         |
 | `rotation`   | `[number, number, number]`                   | `[0, 0, 0]`                          | Euler rotation in radians (XYZ order).                                                       |
 | `scale`      | `[number, number, number]`                   | `[1, 1, 1]`                          | Non-uniform scale per axis.                                                                  |
@@ -79,7 +79,7 @@ const material = new THREE.MeshStandardMaterial({ color: '#f97316', roughness: 0
 
 - `Vhree` owns renderer/scene lifecycles, caps DPR, observes container resize, and shares `{ scene, camera, renderer, sizeEl }` through context.
 - `VCamera` registers itself with `Vhree`, keeps aspect ratios synced via `ResizeObserver`, and restores the provider’s fallback camera when unmounted.
-- `VMesh` mounts lazily once the scene is available, removes itself on unmount, and only disposes of geometry/material it created.
+- `VMesh` mounts lazily once the scene is available, removes itself on unmount, and only disposes of geometry/material it created. DEV builds log a warning if a disposal attempt fails so leaks surface immediately during development.
 
 ## Animations
 

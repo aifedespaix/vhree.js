@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { AnimationSpec } from '../src'
 import * as THREE from 'three'
-import { computed, reactive, watch } from 'vue'
-import { pulse, VCamera, Vhree, VMesh } from '../src'
+import { computed, defineComponent, h, inject, reactive, ref, watch } from 'vue'
+import { pulse, useFrame, VCamera, Vhree, VMesh } from '../src'
+import { VHREE_CTX } from '../src/core/context'
 
 type Vec3 = [number, number, number]
 type EulerTuple = [number, number, number]
@@ -69,6 +70,38 @@ const material = new THREE.MeshBasicMaterial({ color: state.meshColor, wireframe
 // Watchers “cheap” (aucune alloc per-frame)
 watch(() => state.meshColor, v => material.color.set(v))
 watch(() => state.wireframe, v => (material.wireframe = v))
+
+const showLifecycleMesh = ref(true)
+const lifecycleToggleCount = ref(0)
+
+const toggleLifecycleMesh = () => {
+  showLifecycleMesh.value = !showLifecycleMesh.value
+  if (!showLifecycleMesh.value)
+    lifecycleToggleCount.value += 1
+}
+
+const MemoryStats = defineComponent({
+  name: 'VMeshLifecycleStats',
+  setup() {
+    const ctx = inject(VHREE_CTX, null)
+    const geometryCount = ref(0)
+    const materialCount = ref(0)
+
+    if (ctx) {
+      useFrame(() => {
+        const renderer = ctx.renderer.value
+        geometryCount.value = renderer?.info.memory.geometries ?? 0
+        materialCount.value = renderer?.info.memory.materials ?? 0
+      })
+    }
+
+    return () =>
+      h('div', { class: 'lifecycle-stats' }, [
+        h('span', `Geometries: ${geometryCount.value}`),
+        h('span', `Materials: ${materialCount.value}`),
+      ])
+  },
+})
 </script>
 
 <template>
@@ -162,6 +195,27 @@ watch(() => state.wireframe, v => (material.wireframe = v))
         </Vhree>
       </div>
     </Variant>
+
+    <Variant title="Lifecycle — fallback cleanup">
+      <div class="lifecycle-section">
+        <div class="lifecycle-controls">
+          <HstButton class="lifecycle-button" @click="toggleLifecycleMesh">
+            {{ showLifecycleMesh ? 'Unmount fallback mesh' : 'Mount fallback mesh' }}
+          </HstButton>
+          <p class="lifecycle-caption">
+            Unmounts triggered: {{ lifecycleToggleCount }}. The counters below mirror
+            <code>renderer.info.memory</code> and return to zero when the fallback mesh is removed.
+          </p>
+        </div>
+        <div class="story-canvas">
+          <Vhree background="#020617" :dpr="2">
+            <VCamera :position="[0, 0, 3.2]" :look-at="[0, 0, 0]" />
+            <VMesh v-if="showLifecycleMesh" />
+            <MemoryStats />
+          </Vhree>
+        </div>
+      </div>
+    </Variant>
   </Story>
 </template>
 
@@ -180,9 +234,48 @@ watch(() => state.wireframe, v => (material.wireframe = v))
   overflow: hidden;
   background: #020617;
   border: 1px solid #1f2937;
+  position: relative;
 }
 
 .story-canvas :deep(canvas) {
   border-radius: 0.75rem;
+}
+
+.lifecycle-section {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.lifecycle-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: #e2e8f0;
+}
+
+.lifecycle-button {
+  width: fit-content;
+}
+
+.lifecycle-caption {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.lifecycle-stats {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  font-size: 0.75rem;
+  pointer-events: none;
+  backdrop-filter: blur(6px);
 }
 </style>

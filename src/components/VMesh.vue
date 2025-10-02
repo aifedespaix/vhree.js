@@ -35,8 +35,52 @@ let attachedScene: THREE.Scene | null = null
 const animState: AnimState = { t: 0, paused: false }
 const animations = useAnimation(() => props.animations)
 
-const getGeometry = () => props.geometry ?? new THREE.BoxGeometry(1, 1, 1)
-const getMaterial = () => props.material ?? new THREE.MeshBasicMaterial({ color: '#38bdf8' })
+let ownedGeometry: THREE.BufferGeometry | null = null
+let ownedMaterial: THREE.Material | null = null
+let lastAssignedGeometry: THREE.BufferGeometry | null = null
+let lastAssignedMaterial: THREE.Material | THREE.Material[] | null = null
+
+const ensureOwnedGeometry = (): THREE.BufferGeometry => {
+  if (!ownedGeometry)
+    ownedGeometry = new THREE.BoxGeometry(1, 1, 1)
+
+  return ownedGeometry
+}
+
+const ensureOwnedMaterial = (): THREE.Material => {
+  if (!ownedMaterial)
+    ownedMaterial = new THREE.MeshBasicMaterial({ color: '#38bdf8' })
+
+  return ownedMaterial
+}
+
+const disposeOwnedGeometry = () => {
+  if (!ownedGeometry)
+    return
+
+  try {
+    ownedGeometry.dispose()
+  }
+  catch (error) {
+    if (import.meta.env.DEV)
+      console.warn('[vhree] <VMesh> failed to dispose its default geometry.', error)
+  }
+  ownedGeometry = null
+}
+
+const disposeOwnedMaterial = () => {
+  if (!ownedMaterial)
+    return
+
+  try {
+    ownedMaterial.dispose()
+  }
+  catch (error) {
+    if (import.meta.env.DEV)
+      console.warn('[vhree] <VMesh> failed to dispose its default material.', error)
+  }
+  ownedMaterial = null
+}
 
 watchEffect((onCleanup) => {
   const scene = ctx?.scene.value
@@ -45,7 +89,13 @@ watchEffect((onCleanup) => {
 
   // si mesh pas créé → on fait un cube par défaut
   if (!meshRef.value) {
-    meshRef.value = new THREE.Mesh(getGeometry(), getMaterial())
+    const initialGeometry = props.geometry ?? ensureOwnedGeometry()
+    const initialMaterial: THREE.Material | THREE.Material[] = props.material ?? ensureOwnedMaterial()
+
+    meshRef.value = new THREE.Mesh(initialGeometry, initialMaterial)
+    lastAssignedGeometry = meshRef.value.geometry
+    lastAssignedMaterial = meshRef.value.material
+
     meshRef.value.position.set(...props.position)
     meshRef.value.rotation.set(...props.rotation)
     meshRef.value.scale.set(...props.scale)
@@ -64,9 +114,65 @@ watchEffect((onCleanup) => {
   })
 })
 
+watchEffect(() => {
+  const mesh = meshRef.value
+  if (!mesh)
+    return
+
+  const nextGeometry = props.geometry
+  const previous = lastAssignedGeometry
+
+  if (nextGeometry) {
+    if (previous !== nextGeometry) {
+      mesh.geometry = nextGeometry
+      if (previous && previous === ownedGeometry)
+        disposeOwnedGeometry()
+
+      lastAssignedGeometry = nextGeometry
+    }
+    return
+  }
+
+  const fallback = ensureOwnedGeometry()
+  if (previous !== fallback) {
+    mesh.geometry = fallback
+    lastAssignedGeometry = fallback
+  }
+})
+
+watchEffect(() => {
+  const mesh = meshRef.value
+  if (!mesh)
+    return
+
+  const nextMaterial = props.material
+  const previous = lastAssignedMaterial
+
+  if (nextMaterial) {
+    if (previous !== nextMaterial) {
+      mesh.material = nextMaterial
+      if (previous && previous === ownedMaterial)
+        disposeOwnedMaterial()
+
+      lastAssignedMaterial = nextMaterial
+    }
+    return
+  }
+
+  const fallback = ensureOwnedMaterial()
+  if (previous !== fallback) {
+    mesh.material = fallback
+    lastAssignedMaterial = fallback
+  }
+})
+
 onBeforeUnmount(() => {
   attachedScene?.remove(meshRef.value as THREE.Object3D)
   attachedScene = null
+  disposeOwnedGeometry()
+  disposeOwnedMaterial()
+  lastAssignedGeometry = null
+  lastAssignedMaterial = null
   meshRef.value = null
 })
 
