@@ -37,6 +37,10 @@ const material = new THREE.MeshStandardMaterial({ color: '#facc15', metalness: 0
 | `background` | `string` | `'#0f172a'` | Applied to the scene background via `THREE.Color`.                    |
 | `dpr`        | `number` | `0`         | Caps renderer DPR. `0` falls back to `Math.min(devicePixelRatio, 2)`. |
 
+::: info DPR behaviour
+`dpr="0"` re-applies the automatic cap (`Math.min(window.devicePixelRatio || 1, 2)`). Any positive value is forwarded directly. Supplying the legacy `devicePixelRatio` prop still works during the migration but triggers a development-only warning so templates can be updated safely.
+:::
+
 ## Behaviour Overview
 
 - Creates a single renderer and disposes it during `onBeforeUnmount`.

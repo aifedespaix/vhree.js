@@ -47,6 +47,8 @@ const material = new THREE.MeshStandardMaterial({ color: '#f97316', roughness: 0
 | `background` | `string` | `'#0f172a'`    | Solid colour applied to `scene.background`.                     |
 | `dpr`        | `number` | `0` (auto cap) | Device pixel ratio cap. `0` applies `min(devicePixelRatio, 2)`. |
 
+> ℹ️ Setting `:dpr="0"` re-enables the automatic cap (`Math.min(window.devicePixelRatio || 1, 2)`). Provide a positive number to override the cap. Passing the legacy `devicePixelRatio` prop will continue to work during the transition but logs a development warning.
+
 ### `VCamera` props
 
 | Prop               | Type                               | Default     | Description                                                           |
