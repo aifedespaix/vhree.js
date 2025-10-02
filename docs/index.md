@@ -15,6 +15,9 @@ hero:
     - theme: alt
       text: Learn about VMesh
       link: /components/vmesh
+    - theme: alt
+      text: Explore composables
+      link: /composables/
 
 features:
   - title: SSR by default

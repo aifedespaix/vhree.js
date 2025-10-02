@@ -81,6 +81,63 @@ const material = new THREE.MeshStandardMaterial({ color: '#f97316', roughness: 0
 - `VCamera` registers itself with `Vhree`, keeps aspect ratios synced via `ResizeObserver`, and restores the provider’s fallback camera when unmounted.
 - `VMesh` mounts lazily once the scene is available, removes itself on unmount, and only disposes of geometry/material it created. DEV builds log a warning if a disposal attempt fails so leaks surface immediately during development.
 
+## Composables
+
+vhree.js ships a small set of typed composables that expose the underlying Three.js resources without hiding their lifecycles. Every helper returns a `shallowRef` pointing at the lazily created asset and, when relevant, a disposer to eagerly release GPU memory.
+
+| Hook | Description |
+| ---- | ----------- |
+| `useVhree()` | Access the nearest `<Vhree>` provider. Returns a computed context so consumers can react to provider swaps. |
+| `useRenderLoop()` | Retrieve the shared render loop handle. Useful for imperative stepping or custom scheduling. |
+| `useFrame(cb)` | Subscribe a callback to the shared RAF loop. Returns a disposer. |
+| `useCamera(options)` | Create a managed `PerspectiveCamera` that can optionally register itself as the active camera on the provider. |
+| `useScene(options)` | Read the shared scene or lazily create a standalone `THREE.Scene` when no provider is present. |
+| `useBoxGeometry(options)` / `useSphereGeometry(options)` | Generate parametrised buffer geometries that dispose previous instances when options change. |
+| `useStandardMaterial(options)` | Maintain a `MeshStandardMaterial` instance in-place while reacting to option updates. |
+| `useDirectionalLight(options)` | Spawn a directional light, attach it to the active scene, and keep transforms/intensity in sync with reactive options. |
+| `useOrbitControls(options)` | Attach `OrbitControls` to the active camera/renderer pair, automatically managing RAF subscriptions when damping or auto-rotation is enabled. |
+| `useTexture(source, options)` | Load textures reactively with explicit loading/error state and automatic disposal when the source changes. |
+| `useEnvMap(source, options)` | Load cube or equirectangular environment maps, optionally run them through PMREM, and expose SSR-safe loading/error signals. |
+| `useGLTF(url, options)` | Fetch GLTF/GLB assets with DRACO/KTX2 support, surface descriptive errors when the resource cannot be retrieved, and dispose of geometries/materials on replacement. |
+
+### Loader helpers
+
+The three loader helpers share a common contract:
+
+- `texture`/`envMap`/`gltf` — a `shallowRef` resolving to the loaded resource (or `null` while pending).
+- `isLoading` — a computed boolean toggled while the latest request is in flight.
+- `error` — a `shallowRef<Error | null>` capturing the most recent failure, annotated with the requested URL for quicker debugging.
+- `reload()` — explicit trigger to retry the current source.
+- `dispose()` — dispose of the currently held resource and cancel any inflight requests.
+
+Each helper deduplicates requests: when the source changes mid-flight, the obsolete result is disposed immediately. The loaders guard against SSR by short-circuiting when `window` is unavailable.
+
+```ts
+import * as THREE from 'three'
+import { computed, ref, watchEffect } from 'vue'
+import { useDirectionalLight, useOrbitControls, useStandardMaterial, useTexture, useBoxGeometry } from 'vhree.js'
+
+const textureUrl = ref('https://threejs.org/examples/textures/uv_grid_opengl.jpg')
+const { texture, isLoading: textureIsLoading } = useTexture(textureUrl, {
+  colorSpace: THREE.SRGBColorSpace,
+  minFilter: THREE.LinearMipmapLinearFilter,
+  magFilter: THREE.LinearFilter,
+})
+
+const { geometry } = useBoxGeometry({ width: 1.2, height: 0.8 })
+const { material } = useStandardMaterial({ color: '#f97316', map: computed(() => texture.value) ?? null })
+const { light } = useDirectionalLight({ color: '#facc15', intensity: 1.8, position: [2, 3, 4] })
+const { controls } = useOrbitControls({ enableDamping: true, dampingFactor: 0.12 })
+
+watchEffect(() => {
+  if (!light.value)
+    return
+  light.value.castShadow = true
+})
+```
+
+The helpers deliberately expose the raw Three.js instances, making it straightforward to opt into advanced workflows (tuning anisotropy, cloning geometries, or wiring custom animation systems).
+
 ## Animations
 
 `VMesh` accepts an `animations` prop that resolves specs into callbacks executed inside the shared render loop. An **Animation** is a function with signature `(object: THREE.Object3D, state: AnimState, dt: number, now: number) => void`, where `dt` is the delta in seconds and `now` is the elapsed time.
@@ -146,6 +203,18 @@ When adding or modifying components/composables:
     VCamera.vue
     Vhree.vue
     VMesh.vue
+  /composables
+    /controls
+    /core
+    /geom
+    /light
+    /load
+    /mat
+  /core
+    context.ts
+    loop.ts
+  /types
+    common.ts
   /core
     context.ts
   index.ts
