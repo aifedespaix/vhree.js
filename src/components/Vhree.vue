@@ -7,8 +7,13 @@ import { createRenderLoop } from '../core/loop'
 
 const props = defineProps({
   background: { type: String, default: '#0f172a' },
-  devicePixelRatio: { type: Number, default: 1 },
+  dpr: { type: Number, default: 0 },
+  devicePixelRatio: { type: Number, required: false },
 })
+
+if (import.meta.env.DEV && typeof props.devicePixelRatio !== 'undefined') {
+  console.warn('[vhree] `devicePixelRatio` prop has been renamed to `dpr`. Please update your templates.')
+}
 
 const rootRef = shallowRef<HTMLDivElement | null>(null)
 const canvasRef = shallowRef<HTMLCanvasElement | null>(null)
@@ -134,15 +139,44 @@ watch(
   { immediate: true },
 )
 
+function isPositive(value: number | undefined | null): value is number {
+  return typeof value === 'number' && value > 0
+}
+
+function resolveRequestedDpr(): number {
+  if (isPositive(props.dpr))
+    return props.dpr
+
+  if (!isPositive(props.dpr) && isPositive(props.devicePixelRatio))
+    return props.devicePixelRatio
+
+  return 0
+}
+
+function resolveRendererDpr(): number {
+  const requested = resolveRequestedDpr()
+  if (requested > 0)
+    return requested
+
+  if (typeof window === 'undefined')
+    return 1
+
+  const autoDpr = window.devicePixelRatio || 1
+  return Math.min(autoDpr, 2)
+}
+
+function applyPixelRatio() {
+  if (!renderer)
+    return
+
+  const target = resolveRendererDpr()
+  renderer.setPixelRatio(target)
+  requestRender()
+}
+
 watch(
-  () => props.devicePixelRatio,
-  (value) => {
-    if (!renderer || typeof window === 'undefined')
-      return
-    const target = value > 0 ? value : Math.min(window.devicePixelRatio || 1, 2)
-    renderer.setPixelRatio(target)
-    requestRender()
-  },
+  () => [props.dpr, props.devicePixelRatio],
+  () => applyPixelRatio(),
   { immediate: true },
 )
 
@@ -159,8 +193,7 @@ onMounted(() => {
   renderer.outputColorSpace = THREE.SRGBColorSpace
   rendererRef.value = renderer
 
-  const targetDpr = props.devicePixelRatio > 0 ? props.devicePixelRatio : Math.min(window.devicePixelRatio || 1, 2)
-  renderer.setPixelRatio(targetDpr)
+  applyPixelRatio()
 
   scene = new THREE.Scene()
   sceneRef.value = scene
