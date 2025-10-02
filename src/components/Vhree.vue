@@ -7,7 +7,7 @@ import { createRenderLoop } from '../core/loop'
 
 const props = defineProps({
   background: { type: String, default: '#0f172a' },
-  dpr: { type: Number, default: 0 }
+  devicePixelRatio: { type: Number, default: 1 }
 })
 
 const rootRef = shallowRef<HTMLDivElement | null>(null)
@@ -127,7 +127,7 @@ watch(
 )
 
 watch(
-  () => props.dpr,
+  () => props.devicePixelRatio,
   (value) => {
     if (!renderer || typeof window === 'undefined') return
     const target = value > 0 ? value : Math.min(window.devicePixelRatio || 1, 2)
@@ -148,7 +148,7 @@ onMounted(() => {
   renderer.outputColorSpace = THREE.SRGBColorSpace
   rendererRef.value = renderer
 
-  const targetDpr = props.dpr > 0 ? props.dpr : Math.min(window.devicePixelRatio || 1, 2)
+  const targetDpr = props.devicePixelRatio > 0 ? props.devicePixelRatio : Math.min(window.devicePixelRatio || 1, 2)
   renderer.setPixelRatio(targetDpr)
 
   scene = new THREE.Scene()

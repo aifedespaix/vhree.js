@@ -1,115 +1,84 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import * as THREE from 'three'
+import { reactive, computed } from 'vue'
 import { Vhree, VCamera, VMesh } from '../src'
 
-const active = ref(true)
-const fov = ref(60)
-const near = ref(0.1)
-const far = ref(100)
-const cameraX = ref(0)
-const cameraY = ref(0.4)
-const cameraZ = ref(3.2)
+type Vec3 = [number, number, number]
 
-const lookAtX = ref(0)
-const lookAtY = ref(0.15)
-const lookAtZ = ref(0)
+const state = reactive({
+  // Camera toggles & frustum
+  active: true,
+  fov: 60,      // 10–120 conseillé
+  near: 0.1,
+  far: 100,
 
-const meshMaterial = new THREE.MeshStandardMaterial({ color: '#22d3ee', metalness: 0.1 })
-const meshGeometry = new THREE.CapsuleGeometry(0.35, 1.1, 32, 16)
+  // Camera position
+  cameraX: 0,
+  cameraY: 0.4,
+  cameraZ: 3.2,
 
-const lookAt = ref<[number, number, number]>([lookAtX.value, lookAtY.value, lookAtZ.value])
-
-watch([lookAtX, lookAtY, lookAtZ], ([x, y, z]) => {
-  lookAt.value = [x, y, z]
+  // Look-at target
+  lookAtX: 0,
+  lookAtY: 0.15,
+  lookAtZ: 0,
 })
+
+// Derived tuples (toujours des nombres, jamais de Ref[])
+const position = computed<Vec3>(() => [state.cameraX, state.cameraY, state.cameraZ])
+const lookAt = computed<Vec3>(() => [state.lookAtX, state.lookAtY, state.lookAtZ])
 </script>
 
 <template>
-  <Story title="VCamera" layout="wide">
-    <Variant title="Perspective controls">
-      <div class="story-playground">
-        <header class="control-panel">
-          <label>
-            Active
-            <input v-model="active" type="checkbox" />
-          </label>
-          <label>
-            FOV
-            <input v-model.number="fov" type="range" min="20" max="100" step="1" />
-          </label>
-          <label>
-            Near plane
-            <input v-model.number="near" type="range" min="0.05" max="1" step="0.01" />
-          </label>
-          <label>
-            Far plane
-            <input v-model.number="far" type="range" min="2" max="50" step="0.5" />
-          </label>
-        </header>
+  <Story title="VCamera" autoPropsDisabled>
+    <!-- Panneau de contrôles typé -->
+    <template #controls>
+      <div class="control-grid">
+        <HstCheckbox v-model="state.active" title="Active" />
 
-        <section class="control-grid">
-          <label>
-            Cam X
-            <input v-model.number="cameraX" type="range" min="-3" max="3" step="0.1" />
-          </label>
-          <label>
-            Cam Y
-            <input v-model.number="cameraY" type="range" min="-3" max="3" step="0.1" />
-          </label>
-          <label>
-            Cam Z
-            <input v-model.number="cameraZ" type="range" min="1" max="12" step="0.1" />
-          </label>
-          <label>
-            LookAt X
-            <input v-model.number="lookAtX" type="range" min="-2" max="2" step="0.05" />
-          </label>
-          <label>
-            LookAt Y
-            <input v-model.number="lookAtY" type="range" min="-2" max="2" step="0.05" />
-          </label>
-          <label>
-            LookAt Z
-            <input v-model.number="lookAtZ" type="range" min="-2" max="2" step="0.05" />
-          </label>
-        </section>
+        <HstSlider v-model="state.fov" title="FOV" :min="10" :max="120" :step="1" />
+        <HstNumber v-model="state.near" title="Near" :min="0.001" :step="0.001" />
+        <HstNumber v-model="state.far" title="Far" :min="1" :step="1" />
 
-        <div class="story-canvas">
-          <Vhree background="#0b1120">
-            <VCamera
-              :active="active"
-              :fov="fov"
-              :near="near"
-              :far="far"
-              :position="[cameraX, cameraY, cameraZ]"
-              :look-at="lookAt"
-            />
-            <VMesh :geometry="meshGeometry" :material="meshMaterial" />
-          </Vhree>
-        </div>
+        <HstNumber v-model="state.cameraX" title="Camera X" :step="0.1" />
+        <HstNumber v-model="state.cameraY" title="Camera Y" :step="0.1" />
+        <HstNumber v-model="state.cameraZ" title="Camera Z" :step="0.1" />
+
+        <HstNumber v-model="state.lookAtX" title="LookAt X" :step="0.01" />
+        <HstNumber v-model="state.lookAtY" title="LookAt Y" :step="0.01" />
+        <HstNumber v-model="state.lookAtZ" title="LookAt Z" :step="0.01" />
+      </div>
+    </template>
+
+    <!-- Variante interactive par défaut -->
+    <Variant title="Perspective — interactive">
+      <div class="story-canvas">
+        <Vhree background="#0b1120">
+          <VCamera :active="state.active" :fov="state.fov" :near="state.near" :far="state.far" :position="position"
+            :look-at="lookAt" />
+          <VMesh />
+        </Vhree>
+      </div>
+    </Variant>
+
+    <!-- Variante baseline (pratique pour visuels de régression) -->
+    <Variant title="Defaults — snapshot">
+      <div class="story-canvas">
+        <Vhree background="#0b1120">
+          <VCamera />
+          <VMesh />
+        </Vhree>
       </div>
     </Variant>
   </Story>
 </template>
 
 <style scoped>
-.story-playground {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.story-canvas {
+  flex: 1;
+  min-height: 320px;
+  border-radius: 0.75rem;
+  overflow: hidden;
   background: #020617;
-  border-radius: 1rem;
-  padding: 1rem;
   border: 1px solid #1f2937;
-}
-
-.control-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  color: #e2e8f0;
 }
 
 .control-grid {
@@ -117,25 +86,6 @@ watch([lookAtX, lookAtY, lookAtZ], ([x, y, z]) => {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 1rem;
   color: #e2e8f0;
-}
-
-.control-panel label,
-.control-grid label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.875rem;
-  gap: 0.5rem;
-}
-
-.control-grid input[type='range'] {
-  width: 100%;
-}
-
-.story-canvas {
-  flex: 1;
-  min-height: 320px;
-  border-radius: 0.75rem;
-  overflow: hidden;
 }
 
 .story-canvas :deep(canvas) {

@@ -28,7 +28,7 @@ const meshPosition = computed<[number, number, number]>(() => [0, 0, meshZ.value
 <template>
   <main class="app">
     <section class="preview">
-      <Vhree :background="background" :dpr="devicePixelRatio">
+      <Vhree :background="background" :devicePixelRatio="devicePixelRatio">
         <VCamera :fov="cameraFov" :position="cameraPosition" :look-at="cameraLookAt" />
         <VMesh :geometry="meshGeometry" :material="meshMaterial" :position="meshPosition" />
       </Vhree>
