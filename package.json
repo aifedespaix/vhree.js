@@ -22,9 +22,11 @@
   "scripts": {
     "build": "rm -rf dist && bunx vite build && bunx vue-tsc --emitDeclarationOnly --declaration --declarationMap -p tsconfig.json",
     "typecheck": "bunx vue-tsc --noEmit",
+    "doc": "bun run docs:dev",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
+    "story": "bun run story:dev",
     "story:dev": "histoire dev",
     "story:build": "histoire build",
     "story:preview": "histoire preview"

@@ -1,276 +1,171 @@
 <script setup lang="ts">
 import type { AnimationSpec } from '../src'
 import * as THREE from 'three'
-import { computed, ref, watch } from 'vue'
+import { computed, reactive, watch } from 'vue'
 import { pulse, VCamera, Vhree, VMesh } from '../src'
 
-const useCustomResources = ref(true)
-const meshColor = ref('#38bdf8')
-const wireframe = ref(false)
+type Vec3 = [number, number, number]
+type EulerTuple = [number, number, number]
 
-const posX = ref(0)
-const posY = ref(0)
-const posZ = ref(0.4)
-const rotX = ref(0)
-const rotY = ref(0)
-const rotZ = ref(0)
-const uniformScale = ref(1)
-const enableSpin = ref(true)
-const spinSpeed = ref(1)
-const enableBounce = ref(false)
-const bounceAxis = ref<'x' | 'y' | 'z'>('y')
-const bounceAmplitude = ref(0.25)
-const bounceFrequency = ref(1)
-const enablePulse = ref(false)
-const pulseFrequency = ref(1.5)
-const pulseAmplitude = ref(0.15)
+// ---- State (contrôles UI) ----
+const state = reactive({
+  // Ressources
+  useCustomResources: true,
+  meshColor: '#38bdf8',
+  wireframe: false,
 
-const animations = computed(() => {
+  // Transforms
+  posX: 0,
+  posY: 0,
+  posZ: 0.4,
+  rotX: 0,
+  rotY: 0,
+  rotZ: 0,
+  uniformScale: 1,
+
+  // Animations toggles & params
+  enableSpin: true,
+  spinSpeed: 1,
+  enableBounce: false,
+  bounceAxis: 'y' as 'x' | 'y' | 'z',
+  bounceAmplitude: 0.25,
+  bounceFrequency: 1,
+  enablePulse: false,
+  pulseFrequency: 1.5,
+  pulseAmplitude: 0.15,
+})
+
+// ---- Tuples dérivés (toujours des nombres, jamais de Ref[]) ----
+const position = computed<Vec3>(() => [state.posX, state.posY, state.posZ])
+const rotation = computed<EulerTuple>(() => [state.rotX, state.rotY, state.rotZ])
+const scale = computed<Vec3>(() => [state.uniformScale, state.uniformScale, state.uniformScale])
+
+// ---- Animations (résolues par le Mesh via props.animations) ----
+const animations = computed<AnimationSpec[]>(() => {
   const list: AnimationSpec[] = []
-
-  if (enableSpin.value) {
-    list.push({ name: 'spin', options: { axis: 'y', speed: spinSpeed.value } })
+  if (state.enableSpin) {
+    list.push({ name: 'spin', options: { axis: 'y', speed: state.spinSpeed } })
   }
-
-  if (enableBounce.value) {
+  if (state.enableBounce) {
     list.push({
       name: 'bounce',
       options: {
-        axis: bounceAxis.value,
-        amplitude: bounceAmplitude.value,
-        frequency: bounceFrequency.value,
+        axis: state.bounceAxis,
+        amplitude: state.bounceAmplitude,
+        frequency: state.bounceFrequency,
       },
     })
   }
-
-  if (enablePulse.value) {
-    list.push(pulse({ frequency: pulseFrequency.value, amplitude: pulseAmplitude.value }))
+  if (state.enablePulse) {
+    list.push(pulse({ frequency: state.pulseFrequency, amplitude: state.pulseAmplitude }))
   }
-
   return list
 })
 
-const position = computed(() => [posX.value, posY.value, posZ.value] as [number, number, number])
-const rotation = computed(() => [rotX.value, rotY.value, rotZ.value] as [number, number, number])
-const scale = computed(() => [uniformScale.value, uniformScale.value, uniformScale.value] as [number, number, number])
-
+// ---- Ressources custom (créées une seule fois) ----
 const geometry = new THREE.TorusKnotGeometry(0.45, 0.16, 128, 24)
-const material = new THREE.MeshBasicMaterial({ color: meshColor.value, wireframe: wireframe.value })
+const material = new THREE.MeshBasicMaterial({ color: state.meshColor, wireframe: state.wireframe })
 
-watch(meshColor, (value) => {
-  material.color.set(value)
-})
-
-watch(wireframe, (value) => {
-  material.wireframe = value
-})
+// Watchers “cheap” (aucune alloc per-frame)
+watch(() => state.meshColor, v => material.color.set(v))
+watch(() => state.wireframe, v => (material.wireframe = v))
 </script>
 
 <template>
-  <Story title="VMesh" layout="fullscreen">
-    <Variant title="Defaults">
-      <div class="story-playground">
-        <p class="story-note">
-          Default geometry (cube) and `MeshBasicMaterial` keep the mesh visible even with lights disabled.
-        </p>
-        <div class="story-canvas">
-          <Vhree background="#020617" :dpr="2">
-            <VCamera :position="[0, 0, 3.2]" :look-at="[0, 0, 0]" />
-            <VMesh />
-          </Vhree>
-        </div>
+  <Story title="VMesh" auto-props-disabled>
+    <!-- Panneau de contrôles global (comme VCamera story) -->
+    <template #controls>
+      <div class="control-grid">
+        <HstCheckbox v-model="state.useCustomResources" title="Use custom geometry & material" />
+        <HstColor v-model="state.meshColor" title="Mesh color" />
+        <HstCheckbox v-model="state.wireframe" title="Wireframe" />
+
+        <HstSlider v-model="state.posX" title="Position X" :min="-1.5" :max="1.5" :step="0.05" />
+        <HstSlider v-model="state.posY" title="Position Y" :min="-1.5" :max="1.5" :step="0.05" />
+        <HstSlider v-model="state.posZ" title="Position Z" :min="-1.5" :max="1.5" :step="0.05" />
+
+        <HstSlider v-model="state.rotX" title="Rotation X (rad)" :min="-3.141" :max="3.141" :step="0.05" />
+        <HstSlider v-model="state.rotY" title="Rotation Y (rad)" :min="-3.141" :max="3.141" :step="0.05" />
+        <HstSlider v-model="state.rotZ" title="Rotation Z (rad)" :min="-3.141" :max="3.141" :step="0.05" />
+
+        <HstSlider v-model="state.uniformScale" title="Uniform scale" :min="0.2" :max="2" :step="0.05" />
+
+        <HstCheckbox v-model="state.enableSpin" title="Spin" />
+        <HstSlider
+          v-model="state.spinSpeed"
+          title="Spin speed"
+          :min="-6"
+          :max="6"
+          :step="0.1"
+          :disabled="!state.enableSpin"
+        />
+
+        <HstCheckbox v-model="state.enableBounce" title="Bounce" />
+        <HstSelect
+          v-model="state.bounceAxis"
+          title="Bounce axis"
+          :options="[{ label: 'X', value: 'x' }, { label: 'Y', value: 'y' }, { label: 'Z', value: 'z' }]"
+          :disabled="!state.enableBounce"
+        />
+        <HstSlider
+          v-model="state.bounceAmplitude"
+          title="Bounce amplitude"
+          :min="0" :max="1" :step="0.05"
+          :disabled="!state.enableBounce"
+        />
+        <HstSlider
+          v-model="state.bounceFrequency"
+          title="Bounce frequency"
+          :min="0.5" :max="3" :step="0.05"
+          :disabled="!state.enableBounce"
+        />
+
+        <HstCheckbox v-model="state.enablePulse" title="Pulse" />
+        <HstSlider
+          v-model="state.pulseFrequency"
+          title="Pulse frequency"
+          :min="0.5" :max="4" :step="0.1"
+          :disabled="!state.enablePulse"
+        />
+        <HstSlider
+          v-model="state.pulseAmplitude"
+          title="Pulse amplitude"
+          :min="0" :max="0.5" :step="0.01"
+          :disabled="!state.enablePulse"
+        />
+      </div>
+    </template>
+
+    <!-- Variante interactive (utilise l'UI ci-dessus) -->
+    <Variant title="Interactive">
+      <div class="story-canvas">
+        <Vhree background="#0b1120" :dpr="2.5">
+          <VCamera :position="[0, 0, 4]" :look-at="[0, 0, 0]" />
+          <VMesh
+            :geometry="state.useCustomResources ? geometry : null"
+            :material="state.useCustomResources ? material : null"
+            :position="position"
+            :rotation="rotation"
+            :scale="scale"
+            :animations="animations"
+          />
+        </Vhree>
       </div>
     </Variant>
 
-    <Variant title="Custom resources">
-      <div class="story-playground">
-        <header class="control-panel">
-          <label>
-            Use custom geometry & material
-            <input v-model="useCustomResources" type="checkbox">
-          </label>
-          <label>
-            Mesh colour
-            <input v-model="meshColor" type="color">
-          </label>
-          <label>
-            Wireframe
-            <input v-model="wireframe" type="checkbox">
-          </label>
-        </header>
-
-        <section class="control-grid">
-          <label>
-            Position X
-            <input v-model.number="posX" type="range" min="-1.5" max="1.5" step="0.05">
-          </label>
-          <label>
-            Position Y
-            <input v-model.number="posY" type="range" min="-1.5" max="1.5" step="0.05">
-          </label>
-          <label>
-            Position Z
-            <input v-model.number="posZ" type="range" min="-1.5" max="1.5" step="0.05">
-          </label>
-          <label>
-            Rotation X
-            <input v-model.number="rotX" type="range" min="-3.141" max="3.141" step="0.05">
-          </label>
-          <label>
-            Rotation Y
-            <input v-model.number="rotY" type="range" min="-3.141" max="3.141" step="0.05">
-          </label>
-          <label>
-            Rotation Z
-            <input v-model.number="rotZ" type="range" min="-3.141" max="3.141" step="0.05">
-          </label>
-          <label>
-            Uniform scale
-            <input v-model.number="uniformScale" type="range" min="0.2" max="2" step="0.05">
-          </label>
-        </section>
-
-        <div class="story-canvas">
-          <Vhree background="#0b1120" :dpr="2.5">
-            <VCamera :position="[0, 0, 4]" :look-at="[0, 0, 0]" />
-            <VMesh
-              :geometry="useCustomResources ? geometry : null"
-              :material="useCustomResources ? material : null"
-              :position="position"
-              :rotation="rotation"
-              :scale="scale"
-            />
-          </Vhree>
-        </div>
-      </div>
-    </Variant>
-
-    <Variant title="Animations">
-      <div class="story-playground">
-        <p class="story-note">
-          Toggle built-in animations and tweak their options. Callbacks run inside the shared render loop.
-        </p>
-
-        <header class="control-panel">
-          <label>
-            Spin
-            <input v-model="enableSpin" type="checkbox">
-          </label>
-          <label>
-            Bounce
-            <input v-model="enableBounce" type="checkbox">
-          </label>
-          <label>
-            Pulse
-            <input v-model="enablePulse" type="checkbox">
-          </label>
-        </header>
-
-        <section class="control-grid">
-          <label>
-            Spin speed
-            <input
-              v-model.number="spinSpeed"
-              type="range"
-              min="-6"
-              max="6"
-              step="0.1"
-              :disabled="!enableSpin"
-            >
-          </label>
-          <label>
-            Bounce axis
-            <select v-model="bounceAxis" :disabled="!enableBounce">
-              <option value="x">X</option>
-              <option value="y">Y</option>
-              <option value="z">Z</option>
-            </select>
-          </label>
-          <label>
-            Bounce amplitude
-            <input
-              v-model.number="bounceAmplitude"
-              type="range"
-              min="0"
-              max="1"
-              step="0.05"
-              :disabled="!enableBounce"
-            >
-          </label>
-          <label>
-            Bounce frequency
-            <input
-              v-model.number="bounceFrequency"
-              type="range"
-              min="0.5"
-              max="3"
-              step="0.05"
-              :disabled="!enableBounce"
-            >
-          </label>
-          <label>
-            Pulse frequency
-            <input
-              v-model.number="pulseFrequency"
-              type="range"
-              min="0.5"
-              max="4"
-              step="0.1"
-              :disabled="!enablePulse"
-            >
-          </label>
-          <label>
-            Pulse amplitude
-            <input
-              v-model.number="pulseAmplitude"
-              type="range"
-              min="0"
-              max="0.5"
-              step="0.01"
-              :disabled="!enablePulse"
-            >
-          </label>
-        </section>
-
-        <div class="story-canvas">
-          <Vhree background="#0f172a" :dpr="2">
-            <VCamera :position="[0, 0, 4]" :look-at="[0, 0, 0]" />
-            <VMesh :geometry="geometry" :material="material" :animations="animations" />
-          </Vhree>
-        </div>
+    <!-- Variante baseline (snapshot) -->
+    <Variant title="Defaults — snapshot">
+      <div class="story-canvas">
+        <Vhree background="#020617" :dpr="2">
+          <VCamera :position="[0, 0, 3.2]" :look-at="[0, 0, 0]" />
+          <VMesh />
+        </Vhree>
       </div>
     </Variant>
   </Story>
 </template>
 
 <style scoped>
-.story-playground {
-  position: relative;
-  width: 100%;
-  min-height: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  background: #020617;
-  border-radius: 1rem;
-  padding: 1rem;
-  border: 1px solid #1f2937;
-}
-
-.story-note {
-  margin: 0;
-  font-size: 0.875rem;
-  color: #cbd5f5;
-}
-
-.control-panel {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-  color: #e2e8f0;
-}
-
 .control-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -278,23 +173,13 @@ watch(wireframe, (value) => {
   color: #e2e8f0;
 }
 
-.control-panel label,
-.control-grid label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.875rem;
-  gap: 0.5rem;
-}
-
-.control-grid input[type='range'] {
-  width: 100%;
-}
-
 .story-canvas {
   flex: 1;
   min-height: 320px;
   border-radius: 0.75rem;
   overflow: hidden;
+  background: #020617;
+  border: 1px solid #1f2937;
 }
 
 .story-canvas :deep(canvas) {
